@@ -220,6 +220,11 @@ macro_rules! from_array {
                     Self::from(&v[..])
                 }
             }
+            impl From<[u8; $s]> for IVec {
+                fn from(v: [u8; $s]) -> Self {
+                    Self::from(&v[..])
+                }
+            }
         )*
     }
 }
