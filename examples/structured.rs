@@ -19,7 +19,7 @@ use {
     },
 };
 
-fn upsert(db: &sled::Db) -> sled::Result<()> {
+fn upsert(db: &vsdbsled::Db) -> vsdbsled::Result<()> {
     // We use `BigEndian` for key types because
     // they preserve lexicographic ordering,
     // which is nice if we ever want to iterate
@@ -56,7 +56,7 @@ fn upsert(db: &sled::Db) -> sled::Result<()> {
             // may have witnessed the old version to keep working
             // without taking out any locks. IVec will be
             // stack-allocated until it reaches 22 bytes
-            let mut backing_bytes = sled::IVec::from(existing);
+            let mut backing_bytes = vsdbsled::IVec::from(existing);
 
             // this verifies that our value is the correct length
             // and alignment (in this case we don't need it to be
@@ -79,7 +79,7 @@ fn upsert(db: &sled::Db) -> sled::Result<()> {
         } else {
             println!("setting count to 0");
 
-            Some(sled::IVec::from(
+            Some(vsdbsled::IVec::from(
                 Value { count: U64::new(0), whatever: [0; 16] }.as_bytes(),
             ))
         }
@@ -106,7 +106,7 @@ struct DogValue {
     postal_code: U16<LittleEndian>,
 }
 
-fn variable_lengths(db: &sled::Db) -> sled::Result<()> {
+fn variable_lengths(db: &vsdbsled::Db) -> vsdbsled::Result<()> {
     // here we will show how we can use zerocopy for inserting
     // fixed-size components, mixed with variable length
     // records on the end or beginning.
@@ -180,7 +180,7 @@ fn variable_lengths(db: &sled::Db) -> sled::Result<()> {
     Ok(())
 }
 
-fn hash_join(db: &sled::Db) -> sled::Result<()> {
+fn hash_join(db: &vsdbsled::Db) -> vsdbsled::Result<()> {
     // here we will try to find cats and dogs who
     // live in the same home.
 
@@ -190,7 +190,8 @@ fn hash_join(db: &sled::Db) -> sled::Result<()> {
     let mut join = std::collections::HashMap::new();
 
     for name_value_res in &cats {
-        // cats are stored as name -> favorite_number + battles_won + home name variable bytes
+        // cats are stored as name -> favorite_number + battles_won + home name
+        // variable bytes
         let (name, value_bytes) = name_value_res?;
         let (_, home_name): (LayoutVerified<&[u8], CatValue>, &[u8]) =
             LayoutVerified::new_from_prefix(&*value_bytes).unwrap();
@@ -200,7 +201,8 @@ fn hash_join(db: &sled::Db) -> sled::Result<()> {
     }
 
     for name_value_res in &dogs {
-        // dogs are stored as name -> home name variable bytes + woof count + postal code
+        // dogs are stored as name -> home name variable bytes + woof count +
+        // postal code
         let (name, value_bytes) = name_value_res?;
 
         // note that this is reversed from the cat example above, where
@@ -226,8 +228,8 @@ fn hash_join(db: &sled::Db) -> sled::Result<()> {
     Ok(())
 }
 
-fn main() -> sled::Result<()> {
-    let db = sled::open("my_database")?;
+fn main() -> vsdbsled::Result<()> {
+    let db = vsdbsled::open("my_database")?;
     upsert(&db)?;
     variable_lengths(&db)?;
     hash_join(&db)?;

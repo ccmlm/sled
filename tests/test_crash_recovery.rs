@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use rand::Rng;
 
-use sled::Config;
+use vsdbsled::Config;
 
 use common::cleanup;
 
@@ -29,8 +29,8 @@ const TX_DIR: &str = "crash_tx";
 const CRASH_CHANCE: u32 = 250;
 
 fn main() {
-    // Don't actually run this harness=false test under miri, as it requires spawning and killing
-    // child processes.
+    // Don't actually run this harness=false test under miri, as it requires
+    // spawning and killing child processes.
     if cfg!(miri) {
         return;
     }
@@ -57,7 +57,7 @@ fn main() {
 /// Verifies that the keys in the tree are correctly recovered.
 /// Panics if they are incorrect.
 /// Returns the key that should be resumed at, and the current cycle value.
-fn verify(tree: &sled::Tree) -> (u32, u32) {
+fn verify(tree: &vsdbsled::Tree) -> (u32, u32) {
     // key 0 should always be the highest value, as that's where we increment
     // at some point, it might go down by one
     // it should never return, or go down again after that
@@ -94,7 +94,7 @@ fn verify(tree: &sled::Tree) -> (u32, u32) {
     let low_beginning = u32_to_vec(contiguous + 1);
 
     for res in tree.range(&*low_beginning..) {
-        let (k, v): (sled::IVec, _) = res.unwrap();
+        let (k, v): (vsdbsled::IVec, _) = res.unwrap();
         assert_eq!(
             slice_to_u32(&*v),
             lowest,
@@ -169,7 +169,7 @@ fn run_inner(config: Config) {
 
 /// Verifies that the keys in the tree are correctly recovered (i.e., equal).
 /// Panics if they are incorrect.
-fn verify_batches(tree: &sled::Tree) -> u32 {
+fn verify_batches(tree: &vsdbsled::Tree) -> u32 {
     let mut iter = tree.iter();
     let first_value = match iter.next() {
         Some(Ok((_k, v))) => slice_to_u32(&*v),
@@ -199,12 +199,12 @@ fn verify_batches(tree: &sled::Tree) -> u32 {
     first_value
 }
 
-fn run_batches_inner(db: sled::Db) {
-    fn do_batch(i: u32, db: &sled::Db) {
+fn run_batches_inner(db: vsdbsled::Db) {
+    fn do_batch(i: u32, db: &vsdbsled::Db) {
         let mut rng = rand::thread_rng();
         let base_value = u32_to_vec(i);
 
-        let mut batch = sled::Batch::default();
+        let mut batch = vsdbsled::Batch::default();
         if rng.gen_bool(0.1) {
             for key in 0..BATCH_SIZE {
                 batch.remove(u32_to_vec(key));

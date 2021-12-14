@@ -8,8 +8,8 @@ use log::{debug, warn};
 
 use quickcheck::{QuickCheck, StdGen};
 
-use sled::Transactional;
-use sled::{transaction::*, *};
+use vsdbsled::Transactional;
+use vsdbsled::{transaction::*, *};
 
 use tree::{
     prop_tree_matches_btreemap, Key,
@@ -66,7 +66,7 @@ fn test_varied_compression_ratios() {
         buf
     };
 
-    let tree = sled::Config::default()
+    let tree = vsdbsled::Config::default()
         .use_compression(true)
         .path("compression_db_test")
         .open()
@@ -77,7 +77,7 @@ fn test_varied_compression_ratios() {
 
     println!("reloading database...");
     drop(tree);
-    let tree = sled::Config::default()
+    let tree = vsdbsled::Config::default()
         .use_compression(true)
         .path("compression_db_test")
         .open()
@@ -89,10 +89,10 @@ fn test_varied_compression_ratios() {
 
 #[test]
 #[cfg(not(miri))] // can't create threads
-fn concurrent_tree_pops() -> sled::Result<()> {
+fn concurrent_tree_pops() -> vsdbsled::Result<()> {
     use std::thread;
 
-    let db = sled::Config::new().temporary(true).open()?;
+    let db = vsdbsled::Config::new().temporary(true).open()?;
 
     // Insert values 0..5
     for x in 0u32..5 {
@@ -497,7 +497,7 @@ fn concurrent_tree_transactions() -> TransactionResult<()> {
         let barrier = barrier.clone();
         let thread = std::thread::spawn(move || {
             barrier.wait();
-            let sub = db.watch_prefix(b"k1");
+            let mut sub = db.watch_prefix(b"k1");
             drop(db);
 
             while sub.next_timeout(Duration::from_millis(100)).is_ok() {}
@@ -521,11 +521,11 @@ fn concurrent_tree_transactions() -> TransactionResult<()> {
 
 #[test]
 fn tree_flush_in_transaction() {
-    let config = sled::Config::new().temporary(true);
+    let config = vsdbsled::Config::new().temporary(true);
     let db = config.open().unwrap();
     let tree = db.open_tree(b"a").unwrap();
 
-    tree.transaction::<_, _, sled::transaction::TransactionError>(|tree| {
+    tree.transaction::<_, _, vsdbsled::transaction::TransactionError>(|tree| {
         tree.insert(b"k1", b"cats")?;
         tree.insert(b"k2", b"dogs")?;
         tree.flush();

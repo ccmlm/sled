@@ -3,7 +3,7 @@
 use std::{
     fmt::{self, Debug},
     ops::Deref,
-    sync::atomic::Ordering::{Acquire, Release},
+    sync::atomic::Ordering::{Acquire, Relaxed, Release},
 };
 
 use crossbeam_epoch::{unprotected, Atomic, Guard, Owned, Shared};
@@ -102,7 +102,10 @@ impl<T: Send + Sync + 'static> Stack<T> {
             loop {
                 let head = self.head(guard);
                 node.deref().next.store(head, Release);
-                if self.head.compare_and_set(head, node, Release, guard).is_ok()
+                if self
+                    .head
+                    .compare_exchange(head, node, Release, Relaxed, guard)
+                    .is_ok()
                 {
                     return;
                 }
@@ -140,7 +143,9 @@ impl<T: Send + Sync + 'static> Stack<T> {
             match unsafe { head.as_ref() } {
                 Some(h) => {
                     let next = h.next.load(Acquire, guard);
-                    match self.head.compare_and_set(head, next, Release, guard)
+                    match self
+                        .head
+                        .compare_exchange(head, next, Release, Relaxed, guard)
                     {
                         Ok(_) => unsafe {
                             // we unset the next pointer before destruction

@@ -268,8 +268,7 @@ impl TransactionalTree {
     {
         let old = self.get(key.as_ref())?;
         let mut writes = self.writes.borrow_mut();
-        let _last_write =
-            writes.insert(key.into(), Some(value.into()));
+        let _last_write = writes.insert(key.into(), Some(value.into()));
         Ok(old)
     }
 
@@ -546,9 +545,7 @@ impl<E> Transactional<E> for [Tree] {
             path_1 == path_2
         });
         if !same_db {
-            return Err(Error::Unsupported(
-                "cannot use trees from multiple databases in the same transaction".into(),
-            ));
+            return Err(Error::Unsupported("cannot use trees from multiple databases in the same transaction".into()));
         }
 
         Ok(TransactionalTrees {
@@ -574,9 +571,7 @@ impl<E> Transactional<E> for [&Tree] {
             path_1 == path_2
         });
         if !same_db {
-            return Err(Error::Unsupported(
-                "cannot use trees from multiple databases in the same transaction".into(),
-            ));
+            return Err(Error::Unsupported("cannot use trees from multiple databases in the same transaction".into()));
         }
 
         Ok(TransactionalTrees {

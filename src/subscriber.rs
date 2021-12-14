@@ -159,7 +159,7 @@ impl Future for Subscriber {
                     Ok(future_rx) => future_rx,
                     Err(TryRecvError::Empty) => break,
                     Err(TryRecvError::Disconnected) => {
-                        return Poll::Ready(None)
+                        return Poll::Ready(None);
                     }
                 }
             };

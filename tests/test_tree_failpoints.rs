@@ -8,7 +8,7 @@ use std::sync::Mutex;
 use quickcheck::{Arbitrary, Gen, QuickCheck, StdGen};
 use rand::{seq::SliceRandom, Rng};
 
-use sled::*;
+use vsdbsled::*;
 
 const SEGMENT_SIZE: usize = 256;
 const BATCH_COUNTER_KEY: &[u8] = b"batch_counter";
@@ -147,7 +147,7 @@ fn value_factory(set_counter: u16) -> Vec<u8> {
 }
 
 fn tear_down_failpoints() {
-    sled::fail::reset();
+    vsdbsled::fail::reset();
 }
 
 #[derive(Debug)]
@@ -244,7 +244,7 @@ fn run_tree_crashes_nicely(ops: Vec<Op>, flusher: bool) -> bool {
                 }
                 // find the last version from a stable batch, if there is one,
                 // throw away all preceeding versions
-                let committed_find_result = ref_entry.versions.iter().enumerate().rev().find(|(_, ReferenceVersion{ batch, value: _ })| match batch {
+                let committed_find_result = ref_entry.versions.iter().enumerate().rev().find(|(_, ReferenceVersion { batch, value: _ })| match batch {
                     Some(batch) => *batch <= stable_batch,
                     None => false,
                 });
@@ -254,7 +254,7 @@ fn run_tree_crashes_nicely(ops: Vec<Op>, flusher: bool) -> bool {
                 }
                 // find the first version from a batch that wasn't committed,
                 // throw away it and all subsequent versions
-                let discarded_find_result = ref_entry.versions.iter().enumerate().find(|(_, ReferenceVersion{ batch, value: _})| match batch {
+                let discarded_find_result = ref_entry.versions.iter().enumerate().find(|(_, ReferenceVersion { batch, value: _ })| match batch {
                     Some(batch) => *batch > stable_batch,
                     None => false,
                 });
@@ -286,14 +286,7 @@ fn run_tree_crashes_nicely(ops: Vec<Op>, flusher: bool) -> bool {
                         // this key must be present in the tree, check if the keys from both
                         // iterators match
                         if actual != ref_key {
-                            panic!(
-                                "expected to iterate over key {:?} but got {:?} instead due to it being missing in \n\ntree: {:?}\n\nref: {:?}\n",
-                                ref_key,
-                                actual,
-                                tree,
-                                reference,
-
-                            );
+                            panic!("expected to iterate over key {:?} but got {:?} instead due to it being missing in \n\ntree: {:?}\n\nref: {:?}\n", ref_key, actual, tree, reference,);
                         }
                         break;
                     } else {
@@ -312,11 +305,7 @@ fn run_tree_crashes_nicely(ops: Vec<Op>, flusher: bool) -> bool {
                             // we have a bug, the reference iterator should always be <= tree
                             // (this means that the key t was in the tree, but it wasn't in
                             // the reference, so the reference iterator has advanced on past t)
-                            println!(
-                                "tree verification failed: expected {:?} got {:?}",
-                                ref_key,
-                                actual
-                            );
+                            println!("tree verification failed: expected {:?} got {:?}", ref_key, actual);
                             return false;
                         } else {
                             // we are iterating through the reference until we have an item that
@@ -341,7 +330,7 @@ fn run_tree_crashes_nicely(ops: Vec<Op>, flusher: bool) -> bool {
                 }
             }
             println!("finished verification");
-        }
+        };
     }
 
     macro_rules! fp_crash {
@@ -493,7 +482,7 @@ fn run_tree_crashes_nicely(ops: Vec<Op>, flusher: bool) -> bool {
                 restart!();
             }
             FailPoint(fp, bitset) => {
-                sled::fail::set(&*fp, bitset);
+                vsdbsled::fail::set(&*fp, bitset);
             }
         }
     }

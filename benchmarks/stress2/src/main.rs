@@ -163,7 +163,7 @@ fn concatenate_merge(
     Some(ret)
 }
 
-fn run(args: Args, tree: Arc<sled::Db>, shutdown: Arc<AtomicBool>) {
+fn run(args: Args, tree: Arc<vsdbsled::Db>, shutdown: Arc<AtomicBool>) {
     let get_max = args.get_prop;
     let set_max = get_max + args.set_prop;
     let del_max = set_max + args.del_prop;
@@ -171,7 +171,7 @@ fn run(args: Args, tree: Arc<sled::Db>, shutdown: Arc<AtomicBool>) {
     let merge_max = cas_max + args.merge_prop;
     let scan_max = merge_max + args.scan_prop;
 
-    let keygen = |len| -> sled::IVec {
+    let keygen = |len| -> vsdbsled::IVec {
         let i = if args.sequential {
             SEQ.fetch_add(1, Ordering::Relaxed)
         } else {
@@ -189,7 +189,7 @@ fn run(args: Args, tree: Arc<sled::Db>, shutdown: Arc<AtomicBool>) {
             .collect()
     };
 
-    let valgen = |len| -> sled::IVec {
+    let valgen = |len| -> vsdbsled::IVec {
         if len == 0 {
             return vec![].into();
         }
@@ -292,7 +292,7 @@ fn main() {
 
     let shutdown = Arc::new(AtomicBool::new(false));
 
-    let config = sled::Config::new()
+    let config = vsdbsled::Config::new()
         .cache_capacity(256 * 1024 * 1024)
         .flush_every_ms(Some(args.flush_every))
         .print_profile_on_drop(true);

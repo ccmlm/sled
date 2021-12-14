@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, Criterion};
 
 use jemallocator::Jemalloc;
 
-use sled::Config;
+use vsdbsled::Config;
 
 #[cfg_attr(
     // only enable jemalloc on linux and macos by default

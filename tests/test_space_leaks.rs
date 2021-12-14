@@ -2,10 +2,10 @@ mod common;
 
 #[test]
 #[cfg_attr(miri, ignore)]
-fn size_leak() -> sled::Result<()> {
+fn size_leak() -> vsdbsled::Result<()> {
     common::setup_logger();
 
-    let tree = sled::Config::new()
+    let tree = vsdbsled::Config::new()
         .temporary(true)
         .segment_size(2048)
         .flush_every_ms(None)

@@ -2,9 +2,9 @@ mod common;
 
 use rand::{thread_rng, Rng};
 
-use sled::*;
+use vsdbsled::*;
 
-use sled::{
+use vsdbsled::{
     pin, BatchManifest, Log, LogKind, LogRead, Lsn, PageId, SEG_HEADER_LEN,
 };
 

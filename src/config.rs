@@ -582,7 +582,7 @@ impl Config {
             any(windows, target_os = "linux", target_os = "macos")
         ))]
         {
-            use fs2::FileExt;
+            use fs4::FileExt;
 
             let try_lock = if cfg!(feature = "testing") {
                 // we block here because during testing
@@ -758,9 +758,10 @@ impl Config {
 
         let expected_old = Shared::null();
 
-        let _ = self.global_error.compare_and_set(
+        let _ = self.global_error.compare_exchange(
             expected_old,
             error,
+            SeqCst,
             SeqCst,
             &guard,
         );

@@ -398,11 +398,7 @@ impl Update {
     }
 
     fn is_free(&self) -> bool {
-        if let Update::Free = self {
-            true
-        } else {
-            false
-        }
+        if let Update::Free = self { true } else { false }
     }
 }
 
@@ -1086,8 +1082,9 @@ impl PageCache {
             page_ptr.cache_infos = new_cache_infos;
 
             debug_delay();
-            let result =
-                old.entry.compare_and_set(old.read, page_ptr, SeqCst, guard);
+            let result = old
+                .entry
+                .compare_exchange(old.read, page_ptr, SeqCst, SeqCst, guard);
 
             match result {
                 Ok(new_shared) => {
@@ -1277,9 +1274,10 @@ impl PageCache {
                 });
 
                 debug_delay();
-                let result = page_view.entry.compare_and_set(
+                let result = page_view.entry.compare_exchange(
                     page_view.read,
                     new_page,
+                    SeqCst,
                     SeqCst,
                     guard,
                 );
@@ -1518,8 +1516,9 @@ impl PageCache {
             page_ptr.cache_infos = vec![cache_info];
 
             debug_delay();
-            let result =
-                old.entry.compare_and_set(old.read, page_ptr, SeqCst, guard);
+            let result = old
+                .entry
+                .compare_exchange(old.read, page_ptr, SeqCst, SeqCst, guard);
 
             match result {
                 Ok(new_shared) => {
@@ -1744,9 +1743,10 @@ impl PageCache {
         });
 
         debug_delay();
-        let result = page_view.entry.compare_and_set(
+        let result = page_view.entry.compare_exchange(
             page_view.read,
             page,
+            SeqCst,
             SeqCst,
             guard,
         );
@@ -1944,9 +1944,10 @@ impl PageCache {
                     debug_delay();
                     if page_view
                         .entry
-                        .compare_and_set(
+                        .compare_exchange(
                             page_view.read,
                             new_page,
+                            SeqCst,
                             SeqCst,
                             guard,
                         )

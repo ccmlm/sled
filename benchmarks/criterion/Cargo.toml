@@ -3,7 +3,7 @@ name = "critter"
 publish = false
 version = "0.1.0"
 authors = ["Tyler Neely <t@jujit.su>"]
-edition = "2018"
+edition = "2021"
 
 [[bench]]
 name = "sled"

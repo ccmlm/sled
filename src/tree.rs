@@ -1,7 +1,7 @@
 use std::{
-    num::NonZeroU64,
     borrow::Cow,
     fmt::{self, Debug},
+    num::NonZeroU64,
     ops::{self, Deref, RangeBounds},
     sync::atomic::Ordering::SeqCst,
 };
@@ -14,6 +14,7 @@ use crate::{atomic_shim::AtomicU64, pagecache::NodeView, *};
 pub(crate) struct View<'g> {
     pub node_view: NodeView<'g>,
     pub pid: PageId,
+    #[allow(dead_code)]
     pub size: u64,
 }
 
@@ -105,8 +106,8 @@ impl Drop for TreeInner {
                 Ok(_) => continue,
                 Err(e) => {
                     error!("failed to flush data to disk: {:?}", e);
-                    return
-                },
+                    return;
+                }
             }
         }
     }
@@ -160,9 +161,11 @@ impl Tree {
         let _cc = concurrency_control::read();
         loop {
             trace!("setting key {:?}", key.as_ref());
-            if let Ok(res) =
-                self.insert_inner(key.as_ref(), Some(value.clone()), &mut guard)?
-            {
+            if let Ok(res) = self.insert_inner(
+                key.as_ref(),
+                Some(value.clone()),
+                &mut guard,
+            )? {
                 return Ok(res);
             }
         }
@@ -189,7 +192,7 @@ impl Tree {
 
         if value == last_value {
             // short-circuit a no-op set or delete
-            return Ok(Ok(value))
+            return Ok(Ok(value));
         }
 
         let frag = if let Some(value) = value.clone() {
@@ -198,12 +201,8 @@ impl Tree {
             Link::Del(encoded_key)
         };
 
-        let link = self.context.pagecache.link(
-            pid,
-            node_view.0,
-            frag,
-            guard,
-        )?;
+        let link =
+            self.context.pagecache.link(pid, node_view.0, frag, guard)?;
 
         if link.is_ok() {
             // success
@@ -432,7 +431,8 @@ impl Tree {
 
         trace!("getting key {:?}", key);
 
-        let View { node_view, pid, .. } = self.view_for_key(key.as_ref(), guard)?;
+        let View { node_view, pid, .. } =
+            self.view_for_key(key.as_ref(), guard)?;
 
         let pair = node_view.leaf_pair_for_key(key.as_ref());
         let val = pair.map(|kv| kv.1.clone());
@@ -467,7 +467,9 @@ impl Tree {
         loop {
             trace!("removing key {:?}", key.as_ref());
 
-            if let Ok(res) = self.insert_inner(key.as_ref(), None, &mut guard)? {
+            if let Ok(res) =
+                self.insert_inner(key.as_ref(), None, &mut guard)?
+            {
                 return Ok(res);
             }
         }
@@ -813,7 +815,8 @@ impl Tree {
     #[allow(clippy::used_underscore_binding)]
     pub async fn flush_async(&self) -> Result<usize> {
         let pagecache = self.context.pagecache.clone();
-        if let Some(result) = threadpool::spawn(move || pagecache.flush())?.await
+        if let Some(result) =
+            threadpool::spawn(move || pagecache.flush())?.await
         {
             result
         } else {
@@ -1581,7 +1584,11 @@ impl Tree {
                 let size = node_view.0.log_size();
                 let view = View { node_view: *node_view, pid, size };
                 if view.merging_child.is_some() {
-                    self.merge_node(&view, view.merging_child.unwrap().get(), guard)?;
+                    self.merge_node(
+                        &view,
+                        view.merging_child.unwrap().get(),
+                        guard,
+                    )?;
                 } else {
                     return Ok(Some(view));
                 }
@@ -1653,7 +1660,11 @@ impl Tree {
 
             // When we encounter a merge intention, we collaboratively help out
             if view.merging_child.is_some() {
-                self.merge_node(&view, view.merging_child.unwrap().get(), guard)?;
+                self.merge_node(
+                    &view,
+                    view.merging_child.unwrap().get(),
+                    guard,
+                )?;
                 retry!();
             } else if view.merging {
                 // we missed the parent merge intention due to a benign race,
@@ -1677,10 +1688,13 @@ impl Tree {
 
             if undershot {
                 // half-complete split detect & completion
-                cursor = view.next.expect(
-                    "if our hi bound is not Inf (inity), \
+                cursor = view
+                    .next
+                    .expect(
+                        "if our hi bound is not Inf (inity), \
                      we should have a right sibling",
-                ).get();
+                    )
+                    .get();
                 if unsplit_parent.is_none() && parent_view.is_some() {
                     unsplit_parent = parent_view.clone();
                 } else if parent_view.is_none() && view.lo.is_empty() {
@@ -1872,7 +1886,9 @@ impl Tree {
                         return Ok(false);
                     };
 
-                    if new_parent_view.merging_child.map(NonZeroU64::get) != Some(child_pid) {
+                    if new_parent_view.merging_child.map(NonZeroU64::get)
+                        != Some(child_pid)
+                    {
                         trace!(
                             "someone else must have already \
                              completed the merge, and now the \
@@ -2230,7 +2246,10 @@ impl Debug for Tree {
                                 saw them on this level",
                                 expected_pids
                             );
-                            std::mem::swap(&mut expected_pids, &mut referenced_pids);
+                            std::mem::swap(
+                                &mut expected_pids,
+                                &mut referenced_pids,
+                            );
                         } else {
                             panic!("trying to debug print empty index node");
                         }

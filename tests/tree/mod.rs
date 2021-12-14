@@ -4,7 +4,7 @@ use quickcheck::{Arbitrary, Gen, RngCore};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use rand_distr::{Distribution, Gamma};
 
-use sled::*;
+use vsdbsled::*;
 
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Key(pub Vec<u8>);
