@@ -16,3 +16,13 @@ jemallocator = "0.3.2"
 
 [features]
 compression=["vsdbsled/compression"]
+
+[profile.release]
+lto = "thin"
+strip = true
+codegen-units = 1
+
+[profile.bench]
+lto = "thin"
+opt-level = 3
+codegen-units = 1
