@@ -20,14 +20,20 @@ features = ["docs"]
 maintenance = { status = "actively-developed" }
 
 [profile.release]
-debug = true
-opt-level = 3
 lto = "thin"
 strip = true
 codegen-units = 1
 
+[profile.bench]
+lto = "thin"
+opt-level = 3
+codegen-units = 1
+
+[profile.dev]
+debug = true
+
 [features]
-default = ["no_metrics"]
+default = ["no_metrics","no_logs"]
 testing = ["event_log", "lock_free_delays", "compression", "failpoints", "backtrace"]
 compression = ["zstd"]
 lock_free_delays = []
@@ -51,7 +57,7 @@ libc = "0.2.101"
 zstd = { version = "0.11.1+zstd.1.5.2", optional = true }
 crc32fast = "1.2.1"
 log = "0.4.14"
-parking_lot = "0.11.2"
+parking_lot = "0.12.0"
 color-backtrace = { version = "0.5.1", optional = true }
 rio = { version = "0.9.4", optional = true }
 backtrace = { version = "0.3.61", optional = true }

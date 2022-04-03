@@ -13,13 +13,13 @@ debug = true
 
 [features]
 default = []
-lock_free_delays = ["sled/lock_free_delays"]
-io_uring = ["sled/io_uring"]
-event_log = ["sled/event_log"]
-compression = ["sled/compression"]
-no_logs = ["sled/no_logs"]
-no_metrics = ["sled/no_metrics"]
-measure_allocs = ["sled/measure_allocs"]
+lock_free_delays = ["vsdbsled/lock_free_delays"]
+io_uring = ["vsdbsled/io_uring"]
+event_log = ["vsdbsled/event_log"]
+compression = ["vsdbsled/compression"]
+no_logs = ["vsdbsled/no_logs"]
+no_metrics = ["vsdbsled/no_metrics"]
+measure_allocs = ["vsdbsled/measure_allocs"]
 jemalloc = ["jemallocator"]
 logging = ["env_logger", "log", "color-backtrace"]
 
@@ -30,6 +30,6 @@ log = { version = "0.4.8", optional = true }
 color-backtrace = { version = "0.3.0", optional = true }
 jemallocator = { version = "0.3.2", optional = true }
 
-[dependencies.sled]
+[dependencies.vsdbsled]
 default_features = false
 path = "../.."

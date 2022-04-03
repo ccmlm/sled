@@ -50,7 +50,7 @@ fn sled_bulk_load(c: &mut Criterion) {
     let mut count = 0_u32;
     let mut bytes = |len| -> Vec<u8> {
         count += 1;
-        count.to_be_bytes().into_iter().cycle().take(len).copied().collect()
+        count.to_be_bytes().into_iter().cycle().take(len).collect()
     };
 
     let mut bench = |key_len, val_len| {

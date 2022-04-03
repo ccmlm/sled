@@ -13,11 +13,12 @@ lint:
 	cargo check --tests --features "compression,testing"
 
 test:
-	cargo test --features "testing"
+	cargo test --features "compression,testing"
 	# cargo test --features "compression,testing" -- --test-threads=1
 
 bench:
-	cargo bench
+	cd benchmarks/criterion; cargo bench
+	cd benchmarks/criterion; cargo bench --features "compression"
 
 fmt:
 	cargo +nightly fmt
